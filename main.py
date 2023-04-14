@@ -2,6 +2,7 @@ import pygame
 import pymunk
 from typing import Type
 from scenes.abstract import BaseScene
+from scenes.catapult_scene import CatapultScene
 
 
 space = pymunk.Space()
@@ -37,5 +38,5 @@ class Game:
     
 
 g = Game()
-g.load_scene(BaseScene)  # !!! Change to the concrete scene
+g.load_scene(CatapultScene)  # !!! Change to the concrete scene
 g.run()
