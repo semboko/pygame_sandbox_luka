@@ -12,7 +12,7 @@ class TankBase:
         self.origin = origin
         
         self.body = Body()
-        self.center = Vec2d(85, -15)
+        self.center = Vec2d(104, -22)
         self.body.position = origin + self.center
         
         points = (
@@ -28,7 +28,7 @@ class TankBase:
         )
         
         self.shape = Poly(self.body, [
-            convert(Vec2d(*p) - self.center, 32)
+            convert(Vec2d(*p) - self.center, 44)
             for p in points
         ])
         self.shape.density = 1
@@ -46,7 +46,8 @@ class TankBase:
         ]
         
         rotated_img = transform.rotate(self.image, degrees(self.body.angle))
-        display.blit(rotated_img, convert(self.body.position - self.center, h))
+        dest = rotated_img.get_rect(center=convert(self.body.position, h))
+        display.blit(rotated_img, dest)
         draw.polygon(display, (255, 0, 150), points, 1)
 
 
