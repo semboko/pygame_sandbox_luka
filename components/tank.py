@@ -2,7 +2,7 @@ from pymunk import Vec2d, Body, Poly, Space, PivotJoint, ShapeFilter
 from pygame import Surface, draw, image, transform
 from components.ball import Ball
 from utils import convert
-from typing import List
+from typing import List, Tuple
 from math import degrees
 
 
@@ -52,7 +52,19 @@ class TankBase:
 
 
 class Wheel(Ball):
-    pass
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        
+        self.image = image.load("./assets/wheel.png", "png")
+        
+    def render(self, display: Surface) -> None:
+        h = display.get_height()
+        rotated_img = transform.rotate(self.image, degrees(self.body.angle))
+        display.blit(
+            rotated_img, 
+            convert(self.body.position - Vec2d(self.radius, -self.radius), h)
+        )
+        
 
 
 class Tank:
@@ -69,13 +81,13 @@ class Tank:
         r = 9
         
         wheel_coords = [
-            Vec2d(38, -56),
-            Vec2d(57, -56),
-            Vec2d(76, -56),
-            Vec2d(96, -56),
-            Vec2d(116, -56),
-            Vec2d(136, -56),
-            Vec2d(160, -56),
+            Vec2d(38, -54),
+            Vec2d(57, -54),
+            Vec2d(76, -54),
+            Vec2d(96, -54),
+            Vec2d(116, -54),
+            Vec2d(136, -54),
+            Vec2d(160, -54),
             Vec2d(184, -42),
         ]
         
