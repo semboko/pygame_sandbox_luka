@@ -1,6 +1,9 @@
-from pymunk import Vec2d, Body, Poly, Space
-from pygame import Surface, draw, image
+from pymunk import Vec2d, Body, Poly, Space, PivotJoint, ShapeFilter
+from pygame import Surface, draw, image, transform
+from components.ball import Ball
 from utils import convert
+from typing import List
+from math import degrees
 
 
 
@@ -42,14 +45,36 @@ class TankBase:
             for v in self.shape.get_vertices()
         ]
         
-        display.blit(self.image, convert(self.body.position - self.center, h))
+        rotated_img = transform.rotate(self.image, degrees(self.body.angle))
+        display.blit(rotated_img, convert(self.body.position - self.center, h))
         draw.polygon(display, (255, 0, 150), points, 1)
+
+
+class Wheel(Ball):
+    pass
 
 
 class Tank:
     def __init__(self, origin: Vec2d, space: Space) -> None:
         self.origin = origin
-        self.tb = TankBase(origin + Vec2d(5, -30), space)
+        self.cf = ShapeFilter(group=1)
+        
+        self.tb = TankBase(origin + Vec2d(0, -30), space)
+        self.tb.shape.filter = self.cf
+        
+        self.wheels = self.create_wheels(space)
+
+    def create_wheels(self, space: Space) -> List[Wheel]:
+        r = 9
+        
+        wheel = Wheel(self.origin + Vec2d(38, -56) + Vec2d(r, -r), r, space)
+        wheel.shape.filter = self.cf
+        tb_local = self.tb.body.world_to_local(wheel.body.position)
+        space.add(PivotJoint(wheel.body, self.tb.body, (0, 0), tb_local))
+        
+        return [wheel, ]
         
     def render(self, display: Surface) -> None:
+        for wheel in self.wheels:
+            wheel.render(display)
         self.tb.render(display)
