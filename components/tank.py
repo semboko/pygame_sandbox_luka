@@ -68,12 +68,27 @@ class Tank:
     def create_wheels(self, space: Space) -> List[Wheel]:
         r = 9
         
-        wheel = Wheel(self.origin + Vec2d(38, -56) + Vec2d(r, -r), r, space)
-        wheel.shape.filter = self.cf
-        tb_local = self.tb.body.world_to_local(wheel.body.position)
-        space.add(PivotJoint(wheel.body, self.tb.body, (0, 0), tb_local))
+        wheel_coords = [
+            Vec2d(38, -56),
+            Vec2d(57, -56),
+            Vec2d(76, -56),
+            Vec2d(96, -56),
+            Vec2d(116, -56),
+            Vec2d(136, -56),
+            Vec2d(160, -56),
+            Vec2d(184, -42),
+        ]
         
-        return [wheel, ]
+        result = []
+        
+        for coord in wheel_coords:
+            wheel = Wheel(self.origin + coord + Vec2d(r, -r), r, space)
+            wheel.shape.filter = self.cf
+            tb_local = self.tb.body.world_to_local(wheel.body.position)
+            space.add(PivotJoint(wheel.body, self.tb.body, (0, 0), tb_local))
+            result.append(wheel)
+        
+        return result
         
     def render(self, display: Surface) -> None:
         for wheel in self.wheels:
