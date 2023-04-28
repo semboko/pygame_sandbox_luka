@@ -1,4 +1,4 @@
-from pymunk import Vec2d, Body, Poly, Space, PivotJoint, ShapeFilter
+from pymunk import Vec2d, Body, Poly, Space, PivotJoint, ShapeFilter, SimpleMotor
 from pygame import Surface, draw, image, transform
 from components.ball import Ball
 from utils import convert
@@ -66,6 +66,17 @@ class Wheel(Ball):
         )
         
 
+class RearWheel(Wheel):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args)
+        
+        tb: TankBase = kwargs["tb"]
+        space: Space = self.body.space
+        
+        self.image = image.load("./assets/rear_wheel.png")
+        self.motor = SimpleMotor(self.body, tb.body, 1)
+        space.add(self.motor)
+
 
 class Tank:
     def __init__(self, origin: Vec2d, space: Space) -> None:
@@ -76,6 +87,17 @@ class Tank:
         self.tb.shape.filter = self.cf
         
         self.wheels = self.create_wheels(space)
+        
+        self.rw = self.create_rear_wheel(space)
+        
+    
+    def create_rear_wheel(self, space: Space) -> RearWheel:
+        r = 9
+        coord = self.origin + Vec2d(14, -42) + Vec2d(r, -r)
+        wheel = RearWheel(coord, r, space, tb=self.tb)
+        wheel.shape.filter = self.cf
+        
+        return wheel
 
     def create_wheels(self, space: Space) -> List[Wheel]:
         r = 9
@@ -105,4 +127,5 @@ class Tank:
     def render(self, display: Surface) -> None:
         for wheel in self.wheels:
             wheel.render(display)
+        self.rw.render(display)
         self.tb.render(display)
