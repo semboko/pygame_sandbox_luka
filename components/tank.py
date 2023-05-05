@@ -1,4 +1,4 @@
-from pymunk import Vec2d, Body, Poly, Space, PivotJoint, ShapeFilter, SimpleMotor, GearJoint
+from pymunk import Vec2d, Body, Poly, Space, PivotJoint, ShapeFilter, SimpleMotor, GearJoint, PinJoint
 from pygame import Surface, draw, image, transform
 from components.ball import Ball
 from utils import convert
@@ -97,6 +97,47 @@ class Tank:
             filter=self.cf,
         )
         
+        self.turret = PolyComponent(
+            origin=origin + Vec2d(35, 0),
+            center=Vec2d(66, -18),
+            space=space,
+            img_path="./assets/turret.png",
+            points=(
+                (0, 16),
+                (47, 15),
+                (71, 0),
+                (91, 0),
+                (66, 14),
+                (124, 20),
+                (132, 27),
+                (117, 36),
+                (43, 36),
+                (38, 30),
+                (16, 26),
+                (2, 25),
+            ),
+            filter=self.cf,
+        )
+        
+        turret_rect = self.turret.shape.bb
+        
+        left_attachment = turret_rect.left, turret_rect.bottom
+        right_attachment = turret_rect.right, turret_rect.bottom
+        
+        space.add(PivotJoint(
+            self.tb.body, 
+            self.turret.body, 
+            self.tb.body.world_to_local(left_attachment), 
+            self.turret.body.world_to_local(left_attachment)
+        ))
+        space.add(PivotJoint(
+            self.tb.body, 
+            self.turret.body, 
+            self.tb.body.world_to_local(right_attachment), 
+            self.turret.body.world_to_local(right_attachment)
+        ))
+        
+        
         self.wheels = self.create_wheels(space)
         
         self.rw = self.create_rear_wheel(space)
@@ -154,3 +195,4 @@ class Tank:
             wheel.render(display)
         self.rw.render(display)
         self.tb.render(display)
+        self.turret.render(display)
