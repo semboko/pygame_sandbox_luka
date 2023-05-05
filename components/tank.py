@@ -6,37 +6,32 @@ from typing import List, Tuple
 from math import degrees
 
 
-
-class TankBase:
-    def __init__(self, origin: Vec2d, space: Space) -> None:
+class PolyComponent:
+    def __init__(
+        self, 
+        origin: Vec2d,
+        center: Vec2d,
+        space: Space, 
+        img_path: str,
+        points: Tuple[Tuple[int, int]],
+        filter: ShapeFilter,
+    ) -> None:
         self.origin = origin
         
         self.body = Body()
-        self.center = Vec2d(104, -22)
+        self.center = center
         self.body.position = origin + self.center
         
-        points = (
-            (0, 0),
-            (48, 0),
-            (73, 6),
-            (204, 10),
-            (200, 28),
-            (172, 34),
-            (38, 33),
-            (10, 20),
-            (0, 20)
-        )
-        
         self.shape = Poly(self.body, [
-            convert(Vec2d(*p) - self.center, 44)
+            convert(Vec2d(*p) - self.center, abs(self.center.y * 2))
             for p in points
         ])
+        self.shape.filter = filter
         self.shape.density = 1
         space.add(self.body, self.shape)
         
-        self.image = image.load("./assets/tank_base.png", "png")
-        
-    
+        self.image = image.load(img_path)
+
     def render(self, display: Surface) -> None:
         h = display.get_height()
         
@@ -70,7 +65,7 @@ class RearWheel(Wheel):
     def __init__(self, *args, **kwargs):
         super().__init__(*args)
         
-        tb: TankBase = kwargs["tb"]
+        tb: PolyComponent = kwargs["tb"]
         space: Space = self.body.space
         
         self.image = image.load("./assets/rear_wheel.png")
@@ -83,8 +78,24 @@ class Tank:
         self.origin = origin
         self.cf = ShapeFilter(group=1)
         
-        self.tb = TankBase(origin + Vec2d(0, -30), space)
-        self.tb.shape.filter = self.cf
+        self.tb = PolyComponent(
+            origin=origin + Vec2d(0, -30),
+            center=Vec2d(104, -22),
+            space=space,
+            img_path="./assets/tank_base.png",
+            points=(
+                (0, 0),
+                (48, 0),
+                (73, 6),
+                (204, 10),
+                (200, 28),
+                (172, 34),
+                (38, 33),
+                (10, 20),
+                (0, 20)
+            ),
+            filter=self.cf,
+        )
         
         self.wheels = self.create_wheels(space)
         
