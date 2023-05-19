@@ -1,4 +1,4 @@
-from pymunk import Vec2d, Body, Poly, Space, PivotJoint, ShapeFilter, SimpleMotor, GearJoint, PinJoint
+from pymunk import Vec2d, Body, Poly, Space, PivotJoint, ShapeFilter, SimpleMotor, GearJoint, PinJoint, RotaryLimitJoint
 from pygame import Surface, draw, image, transform
 from components.ball import Ball
 from utils import convert
@@ -137,6 +137,44 @@ class Tank:
             self.turret.body.world_to_local(right_attachment)
         ))
         
+        self.gun = PolyComponent(
+            origin=origin + Vec2d(156, -30),
+            center=Vec2d(47, 4),
+            space=space,
+            img_path="./assets/gun.png",
+            points=(
+                (0, 0),
+                (13, 2),
+                (25, 2),
+                (33, 3),
+                (35, 0),
+                (45, 0),
+                (49, 3),
+                (90, 4),
+                (90, 2),
+                (94, 4),
+                (94, 8),
+                (0, 8),
+            ),
+            filter=self.cf,
+        )
+        
+        ap = self.gun.origin + Vec2d(-10, -15)
+        
+        space.add(PivotJoint(
+            self.turret.body,
+            self.gun.body,
+            self.turret.body.world_to_local(ap),
+            self.gun.body.world_to_local(ap),
+        ))
+        
+        self.gun_angle = RotaryLimitJoint(
+            self.turret.body,
+            self.gun.body,
+            0, 0.1
+        )
+        
+        space.add(self.gun_angle)
         
         self.wheels = self.create_wheels(space)
         
@@ -189,10 +227,22 @@ class Tank:
 
     def move(self, direction: int) -> None:
         self.rw.motor.rate += -1 * direction
+    
+    def update_gun_angle(self, diff: float) -> None:
+        if self.gun_angle.min < 0 and diff < 0:
+            return
+        if self.gun_angle.max > 1.12 and diff > 0:
+            return
+        self.gun_angle.min += diff
+        self.gun_angle.max += diff
+    
+    def fire(self):
+        pass
         
     def render(self, display: Surface) -> None:
         for wheel in self.wheels:
             wheel.render(display)
         self.rw.render(display)
         self.tb.render(display)
+        self.gun.render(display)
         self.turret.render(display)
