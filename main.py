@@ -10,7 +10,7 @@ from scenes.tank_scene import TankScene
 class Game:
     def __init__(self) -> None:
         pygame.init()
-        self.display = pygame.display.set_mode((500, 500))
+        self.display = pygame.display.set_mode((1500, 750))
         self.clock = pygame.time.Clock()
         self.scene = None
     

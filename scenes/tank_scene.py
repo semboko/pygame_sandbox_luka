@@ -6,6 +6,7 @@ from scenes.abstract import BaseScene
 from pymunk import Space, Vec2d
 from components.floor import Floor
 from components.tank import Tank, Ammo
+from components.terrain import Terrain
 from pygame.surface import Surface
 
 
@@ -16,7 +17,7 @@ class TankScene(BaseScene):
         self.space = Space()
         self.space.gravity = (0, -1000)
         
-        self.terrain = Floor(self.space)
+        self.terrain = Terrain(1500, 5, 100, 300, self.space)
         self.tank = Tank(Vec2d(100, 190), self.space)
         
         self.bullets: List[Ammo] = []
