@@ -1,12 +1,13 @@
 from pygame import K_a, K_d, K_UP, K_DOWN, KEYDOWN, K_SPACE
-from typing import Sequence
+from typing import Sequence, List
 
 from pygame.event import Event
 from scenes.abstract import BaseScene
 from pymunk import Space, Vec2d
 from components.floor import Floor
-from components.tank import Tank
+from components.tank import Tank, Ammo
 from pygame.surface import Surface
+
 
 
 
@@ -18,10 +19,13 @@ class TankScene(BaseScene):
         self.terrain = Floor(self.space)
         self.tank = Tank(Vec2d(100, 190), self.space)
         
+        self.bullets: List[Ammo] = []
+        
     def hadnle_event(self, event: Event) -> None:
         if event.type == KEYDOWN:
             if event.key == K_SPACE:
-                self.tank.fire()
+                ammo = self.tank.fire()
+                self.bullets.append(ammo)
             
         
     def handle_pressed_keys(self, keys: Sequence[bool]) -> None:
@@ -45,3 +49,5 @@ class TankScene(BaseScene):
         display.fill((255, 255, 255))
         self.terrain.render(display)
         self.tank.render(display)
+        for bullet in self.bullets:
+            bullet.render(display)

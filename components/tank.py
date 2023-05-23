@@ -71,12 +71,17 @@ class RearWheel(Wheel):
         self.image = image.load("./assets/rear_wheel.png")
         self.motor = SimpleMotor(self.body, tb.body, 1)
         space.add(self.motor)
+        
+
+class Ammo(Ball):
+    pass
 
 
 class Tank:
     def __init__(self, origin: Vec2d, space: Space) -> None:
         self.origin = origin
         self.cf = ShapeFilter(group=1)
+        self.space = space
         
         self.tb = PolyComponent(
             origin=origin + Vec2d(0, -30),
@@ -182,6 +187,8 @@ class Tank:
         
         for wheel in self.wheels:
             space.add(GearJoint(self.rw.body, wheel.body, 0, 1))
+            
+        self.ammo, self.ammo_joint = self.create_ammo(space)
         
     
     def create_rear_wheel(self, space: Space) -> RearWheel:
@@ -235,9 +242,39 @@ class Tank:
             return
         self.gun_angle.min += diff
         self.gun_angle.max += diff
+        
+
+    def create_ammo(self, space: Space) -> Tuple[Ammo, PivotJoint]:
+        bb = self.gun.shape.bb
+        x = bb.right - 5
+        y = bb.top - 15
+        ammo = Ammo((x, y), 5, space)
+        ammo.shape.filter = self.cf
+        
+        joint = PivotJoint(
+            ammo.body,
+            self.gun.body,
+            ammo.body.world_to_local(ammo.body.position),
+            self.gun.body.world_to_local(ammo.body.position),
+        )
+        space.add(joint)
+        
+        return ammo, joint
     
-    def fire(self):
-        pass
+    def fire(self) -> Ammo:
+        self.space.remove(self.ammo_joint)
+        angle = self.gun.body.angle
+        
+        max_force = 10 ** 5
+        
+        impulse_x = max_force
+        impulse_y = 0
+        
+        print(degrees(angle))
+        self.ammo.body.apply_impulse_at_local_point((impulse_x, impulse_y), (-5, 0))
+        old_ammo = self.ammo
+        self.ammo, self.ammo_joint = self.create_ammo(self.space)
+        return old_ammo
         
     def render(self, display: Surface) -> None:
         for wheel in self.wheels:
@@ -246,3 +283,4 @@ class Tank:
         self.tb.render(display)
         self.gun.render(display)
         self.turret.render(display)
+        self.ammo.render(display)

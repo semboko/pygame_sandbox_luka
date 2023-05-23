@@ -10,7 +10,7 @@ class Ball:
     def __init__(self, coord: Tuple[int, int], r: int, s: pymunk.Space) -> None:
         self.body = pymunk.Body()
         self.body.position = coord
-        self.body.velocity_func = self.limit_velocity
+        # self.body.velocity_func = self.limit_velocity
 
         self.radius = r
         self.shape = pymunk.Circle(self.body, r)
