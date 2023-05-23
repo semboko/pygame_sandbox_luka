@@ -3,7 +3,7 @@ from pygame import Surface, draw, image, transform
 from components.ball import Ball
 from utils import convert
 from typing import List, Tuple
-from math import degrees
+from math import degrees, sin, cos
 
 
 class PolyComponent:
@@ -267,11 +267,20 @@ class Tank:
         
         max_force = 10 ** 5
         
-        impulse_x = max_force
-        impulse_y = 0
+        r = self.ammo.shape.radius
+        
+        impulse = Vec2d(
+            cos(angle) * max_force,
+            sin(angle) * max_force,
+        )
+        
+        point = -1 * Vec2d(
+            cos(angle) * r,
+            sin(angle) * r,
+        )
         
         print(degrees(angle))
-        self.ammo.body.apply_impulse_at_local_point((impulse_x, impulse_y), (-5, 0))
+        self.ammo.body.apply_impulse_at_local_point(impulse, point)
         old_ammo = self.ammo
         self.ammo, self.ammo_joint = self.create_ammo(self.space)
         return old_ammo
