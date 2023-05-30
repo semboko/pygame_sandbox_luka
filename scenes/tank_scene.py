@@ -6,8 +6,9 @@ from scenes.abstract import BaseScene
 from pymunk import Space, Vec2d
 from components.floor import Floor
 from components.tank import Tank, Ammo
-from components.terrain import Terrain
+from components.terrain import Terrain, TerrainBlock
 from pygame.surface import Surface
+from utils import convert
 
 
 
@@ -17,8 +18,10 @@ class TankScene(BaseScene):
         self.space = Space()
         self.space.gravity = (0, -1000)
         
+        
         self.terrain = Terrain(1500, 5, 100, 300, self.space)
         self.tank = Tank(Vec2d(100, 190), self.space)
+        self.init_pos = self.tank.tb.body.position
         
         self.bullets: List[Ammo] = []
         
@@ -41,14 +44,22 @@ class TankScene(BaseScene):
         
         if keys[K_DOWN]:
             self.tank.update_gun_angle(0.01)
+    
+    def get_camera_shift(self, display: Surface) -> Vec2d:
+        h = display.get_height()
+        return (self.init_pos - convert(self.tank.tb.body.position, h)) * -1
         
-    def update(self) -> None:
+    def update(self, display: Surface) -> None:
         self.space.step(1/60)
         self.tank.rw.motor.rate *= 0.98
+        camera_shift = self.get_camera_shift(display)
+        self.terrain.update(camera_shift.x)
     
     def render(self, display: Surface) -> None:
         display.fill((255, 255, 255))
-        self.terrain.render(display)
-        self.tank.render(display)
+        h = display.get_height()
+        camera_shift = self.get_camera_shift(display)
+        self.terrain.render(display, camera_shift.x)
+        self.tank.render(display, camera_shift.x)
         for bullet in self.bullets:
-            bullet.render(display)
+            bullet.render2(display, camera_shift.x)

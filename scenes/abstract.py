@@ -13,7 +13,7 @@ class BaseScene:
     def handle_pressed_keys(self, keys: Sequence[bool]) -> None:
         pass
     
-    def update(self) -> None:
+    def update(self, display: Surface) -> None:
         pass
     
     def render(self, display: Surface) -> None:

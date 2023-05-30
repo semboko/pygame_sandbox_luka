@@ -28,7 +28,7 @@ class Game:
             pk = pygame.key.get_pressed()
             self.scene.handle_pressed_keys(pk)
             
-            self.scene.update()
+            self.scene.update(self.display)
             
             self.scene.render(self.display)
             

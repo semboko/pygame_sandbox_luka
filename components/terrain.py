@@ -1,39 +1,56 @@
 import pygame
 from pygame.surface import Surface
-from pymunk import Space, Body, Segment, Vec2d
+from pymunk import Space, Body, Segment, Vec2d, Poly
 from random import randint
 from utils import convert
 from typing import List, Tuple
+from noise.perlin import SimplexNoise
+
+
+class TerrainBlock:
+    size = Vec2d(10, 10)
+    
+    def __init__(self, pos: Vec2d, space: Space) -> None:
+        self.body = Body(body_type=Body.STATIC)
+        self.body.position = pos
+        
+        self.shape = Poly(self.body, vertices=(
+            (-self.size.x / 2, self.size.y / 2),
+            (self.size.x / 2, self.size.y / 2),
+            (self.size.x / 2, -self.size.y / 2),
+            (-self.size.x / 2, -self.size.y / 2),
+        ))
+        self.shape.density = 1
+        self.shape.friction = 1
+        
+        self.image = Surface(self.size)
+        self.image.fill((30, 30, 30))
+        
+        space.add(self.body, self.shape)
+    
+    def render(self, display: Surface, shift_x: float) -> None:
+        h = display.get_height()
+        pos = pygame.Vector2(*convert(self.body.position, h))
+        pos.x -= shift_x
+        dest = self.image.get_rect(center=pos)
+        display.blit(self.image, dest)
+
 
 class Terrain:
     def __init__(self, display_width: int, min_y: int, max_y: int, step: int, space: Space) -> None:
+        self.blocks: List[TerrainBlock] = []
         
-        self.segments: List[Tuple[Body, Segment]] = []
+        self.noise = SimplexNoise()
         
-        for xa in range(0, display_width, step):
-            if not self.segments:
-                ya = randint(min_y, max_y)
-            else:
-                last_body, last_segment = self.segments[-1]
-                local_b = last_segment.b
-                world_b = last_body.local_to_world(local_b)
-                ya = world_b.y
-                
-            xb = xa + step
-            yb = randint(min_y, max_y)
+        for x in range(0, display_width, TerrainBlock.size.x):
+            noise_value = self.noise.noise2(x/700, 0)
+            y = min_y + (max_y - min_y) * abs(noise_value)
+            block = TerrainBlock(Vec2d(x, y), space)
+            self.blocks.append(block)
             
-            body = Body(body_type=Body.STATIC)
-            body.position = Vec2d(xa, ya)
-            
-            shape = Segment(body, Vec2d(0, 0), Vec2d(xb, yb) - Vec2d(xa, ya), 5)
-            shape.density = 1
-            shape.friction = 1
-            space.add(body, shape)
-            self.segments.append((body, shape))
+    def update(self, shift_x: float) -> None:
+        pass
     
-    def render(self, display: Surface) -> None:
-        h = display.get_height()
-        for body, shape in self.segments:
-            start_pos = convert(body.local_to_world(shape.a), h)
-            end_pos = convert(body.local_to_world(shape.b), h)
-            pygame.draw.line(display, (255, 0, 0), start_pos, end_pos, 5)
+    def render(self, display: Surface, shift_x: float) -> None:
+        for block in self.blocks:
+            block.render(display, shift_x)

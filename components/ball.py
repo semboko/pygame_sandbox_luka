@@ -45,3 +45,23 @@ class Ball:
         )
         
         pygame.draw.line(display, (0, 0, 0), start_pos, end_pos, 1)
+        
+    def render2(self, display: Surface, shift_x: float) -> None:
+        h = display.get_height()
+        pos = pygame.Vector2(*convert(self.body.position, h)) - pygame.Vector2(shift_x, 0)
+        pygame.draw.circle(display, (255, 0, 0), pos, self.radius)
+        
+        alpha = radians(self.body.angle)
+        start_pos = pos
+        end_pos = convert(
+            self.body.local_to_world(
+                (
+                    self.radius * sin(alpha), 
+                    self.radius * cos(alpha),
+                )
+            ), 
+            h
+        )
+        end_pos = pygame.Vector2(end_pos) - pygame.Vector2(shift_x, 0)
+        
+        pygame.draw.line(display, (0, 0, 0), start_pos, end_pos, 1)

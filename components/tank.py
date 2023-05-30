@@ -1,5 +1,5 @@
 from pymunk import Vec2d, Body, Poly, Space, PivotJoint, ShapeFilter, SimpleMotor, GearJoint, PinJoint, RotaryLimitJoint
-from pygame import Surface, draw, image, transform
+from pygame import Surface, draw, image, transform, Vector2
 from components.ball import Ball
 from utils import convert
 from typing import List, Tuple
@@ -32,7 +32,7 @@ class PolyComponent:
         
         self.image = image.load(img_path)
 
-    def render(self, display: Surface) -> None:
+    def render(self, display: Surface, shift_x: float) -> None:
         h = display.get_height()
         
         points = [
@@ -41,7 +41,8 @@ class PolyComponent:
         ]
         
         rotated_img = transform.rotate(self.image, degrees(self.body.angle))
-        dest = rotated_img.get_rect(center=convert(self.body.position, h))
+        pos = Vector2(convert(self.body.position, h)) - Vector2(shift_x, 0)
+        dest = rotated_img.get_rect(center=pos)
         display.blit(rotated_img, dest)
         # draw.polygon(display, (255, 0, 150), points, 1)
 
@@ -52,10 +53,11 @@ class Wheel(Ball):
         
         self.image = image.load("./assets/wheel.png", "png")
         
-    def render(self, display: Surface) -> None:
+    def render(self, display: Surface, shift_x: float) -> None:
         h = display.get_height()
         rotated_img = transform.rotate(self.image, degrees(self.body.angle))
-        dest = rotated_img.get_rect(center=convert(self.body.position, h))
+        pos = Vector2(*convert(self.body.position, h)) - Vector2(shift_x, 0)
+        dest = rotated_img.get_rect(center=pos)
         display.blit(rotated_img, dest)
         # r = self.shape.radius
         # draw.circle(display, (255, 0, 0), convert(self.body.position, h), r, 1)
@@ -285,11 +287,11 @@ class Tank:
         self.ammo, self.ammo_joint = self.create_ammo(self.space)
         return old_ammo
         
-    def render(self, display: Surface) -> None:
+    def render(self, display: Surface, shift_x: float) -> None:
         for wheel in self.wheels:
-            wheel.render(display)
-        self.rw.render(display)
-        self.tb.render(display)
-        self.gun.render(display)
-        self.turret.render(display)
-        self.ammo.render(display)
+            wheel.render(display, shift_x)
+        self.rw.render(display, shift_x)
+        self.tb.render(display, shift_x)
+        self.gun.render(display, shift_x)
+        self.turret.render(display, shift_x)
+        self.ammo.render2(display, shift_x)
