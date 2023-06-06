@@ -1,5 +1,5 @@
 from pymunk import Vec2d, Body, Poly, Space, PivotJoint, ShapeFilter, SimpleMotor, GearJoint, PinJoint, RotaryLimitJoint
-from pygame import Surface, draw, image, transform, Vector2
+from pygame import Surface, draw, image, transform, Vector2, mixer
 from components.ball import Ball
 from utils import convert
 from typing import List, Tuple
@@ -81,6 +81,7 @@ class Ammo(Ball):
 
 class Tank:
     def __init__(self, origin: Vec2d, space: Space) -> None:
+        self.fire_sound = mixer.Sound("assets/explosion_sound.flac")
         self.origin = origin
         self.cf = ShapeFilter(group=1)
         self.space = space
@@ -264,6 +265,10 @@ class Tank:
         return ammo, joint
     
     def fire(self) -> Ammo:
+        self.fire_sound.play()
+        
+        self.ammo.body.angle = 0
+        
         self.space.remove(self.ammo_joint)
         angle = self.gun.body.angle
         
@@ -294,4 +299,4 @@ class Tank:
         self.tb.render(display, shift_x)
         self.gun.render(display, shift_x)
         self.turret.render(display, shift_x)
-        self.ammo.render2(display, shift_x)
+        # self.ammo.render2(display, shift_x)
