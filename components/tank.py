@@ -76,8 +76,23 @@ class RearWheel(Wheel):
         
 
 class Ammo(Ball):
-    pass
-
+    def ready_to_explode(self, space: Space) -> bool:
+        query_result = space.shape_query(self.shape)
+        if not query_result:
+            return False
+        return True
+    
+    def explode(self):
+        space = self.body.space
+        query_result = space.point_query(self.body.position, 150, ShapeFilter())
+        for item in query_result:
+            if item.shape.body.body_type is Body.STATIC:
+                continue
+            if item.shape == self.shape:
+                continue
+            # item.shape.body.body_type = Body.DYNAMIC
+            F = item.point - self.body.position
+            item.shape.body.apply_force_at_world_point(F * 10**6, (item.point))
 
 class Tank:
     def __init__(self, origin: Vec2d, space: Space) -> None:
@@ -286,7 +301,6 @@ class Tank:
             sin(angle) * r,
         )
         
-        print(degrees(angle))
         self.ammo.body.apply_impulse_at_local_point(impulse, point)
         old_ammo = self.ammo
         self.ammo, self.ammo_joint = self.create_ammo(self.space)

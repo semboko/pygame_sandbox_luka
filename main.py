@@ -23,7 +23,7 @@ class Game:
                 if event.type == pygame.QUIT:
                     pygame.quit()
                     exit()
-                self.scene.hadnle_event(event)
+                self.scene.hadnle_event(event, self.display)
             
             pk = pygame.key.get_pressed()
             self.scene.handle_pressed_keys(pk)

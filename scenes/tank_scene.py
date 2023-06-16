@@ -1,4 +1,4 @@
-from pygame import K_a, K_d, K_UP, K_DOWN, KEYDOWN, K_SPACE, Vector2
+from pygame import K_a, K_d, K_UP, K_DOWN, KEYDOWN, K_SPACE, Vector2, MOUSEBUTTONDOWN
 from typing import Sequence, List
 
 from pygame.event import Event
@@ -10,6 +10,7 @@ from components.terrain import Terrain, TerrainBlock
 from pygame.surface import Surface
 from utils import convert
 from components.animation import Animation
+from components.ball import Ball
 
 
 
@@ -27,15 +28,21 @@ class TankScene(BaseScene):
         self.explosion = Animation("./assets/Tile.png", 64, Vector2(256, 256))
         
         self.bullets: List[Ammo] = []
+        self.targets: List[Ball] = []
         
-    def hadnle_event(self, event: Event) -> None:
+    def hadnle_event(self, event: Event, display: Surface) -> None:
         if event.type == KEYDOWN:
             if event.key == K_SPACE and not self.explosion.running:
                 ammo = self.tank.fire()
                 exp_pos = convert(ammo.body.position, 750)
                 self.explosion.start(Vector2(exp_pos) + Vector2(0, -150))
                 self.bullets.append(ammo)
-            
+        if event.type == MOUSEBUTTONDOWN:
+            camera_shift = self.get_camera_shift(display)
+            pos = convert(tuple(event.pos), 750)
+            ball = Ball((pos[0] + camera_shift.x, pos[1]), 15, self.space)
+            ball.shape.density = 0.2
+            self.targets.append(ball)
         
     def handle_pressed_keys(self, keys: Sequence[bool]) -> None:
         if keys[K_a]:
@@ -60,6 +67,14 @@ class TankScene(BaseScene):
         camera_shift = self.get_camera_shift(display)
         self.terrain.update(camera_shift.x)
         self.explosion.update()
+        
+        for ammo in self.bullets:
+            if ammo.ready_to_explode(self.space):
+                ammo.explode()
+                self.space.remove(ammo.body, ammo.shape)
+                self.bullets.remove(ammo)
+                self.tank.fire_sound.play()
+            
     
     def render(self, display: Surface) -> None:
         display.fill((255, 255, 255))
@@ -69,4 +84,6 @@ class TankScene(BaseScene):
         self.tank.render(display, camera_shift.x)
         for bullet in self.bullets:
             bullet.render2(display, camera_shift.x)
+        for target in self.targets:
+            target.render2(display, camera_shift.x)
         self.explosion.render(display, camera_shift.x)

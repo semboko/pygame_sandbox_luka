@@ -70,8 +70,6 @@ class Terrain:
             for x in range(int(new_lx), int(lx), int(TerrainBlock.size.x)):
                 block = self.get_block(x)
                 self.blocks.insert(0, block)
-                
-        print(len(self.blocks))
 
     def render(self, display: Surface, shift_x: float) -> None:
         for block in self.blocks:
